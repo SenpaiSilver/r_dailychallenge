@@ -21,3 +21,15 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Pip
+pip-log.txt
+
+# Python
+__pycache__
+
+# Other
+~*
+_*
+*.db
+*.stackdump
