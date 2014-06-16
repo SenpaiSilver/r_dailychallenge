@@ -1,7 +1,7 @@
-; Easy Challenge 167: 	http://redd.it/289png
-; Status: 							Aborted
+; Easy Challenge 167: http://redd.it/289png
+; Status: Aborted
 ;
-;	Compilng:
+;	Compile:
 ; $ nasm challenge167easy.S -f elf64 -o challenge167easy.o
 ; $ gcc challenge167easy.o -o challenge167easy
 ;
