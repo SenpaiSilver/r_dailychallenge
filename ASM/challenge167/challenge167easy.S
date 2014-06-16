@@ -1,44 +1,102 @@
-; Easy Challenge 167: http://redd.it/289png
+; Easy Challenge 167: 	http://redd.it/289png
+; Status: 							Aborted
 ;
+;	Compilng:
 ; $ nasm challenge167easy.S -f elf64 -o challenge167easy.o
 ; $ gcc challenge167easy.o -o challenge167easy
-; nasm challenge167easy.S -f elf64 -o challenge167.o && gcc challenge167.o -o challenge167.exe && ./challenge167.exe || clear && cat challenge167.exe.stackdump
-
+;
+; Usage:
+; ./challenge167easy <outputfile>
 
 [BITS 64]
 
 global	main
 
-section	.data
-	strStart:			db '<!DOCTYPE html>\n<html>\n\t<head>\n\t\t<title></title>\n\t</head>\n\n\t<body>\n\t\t<p>',0
-	strEnd:				db '</p>\n\t</body>\n</html>',0
-	strUsage:			db 'Usage: ./challenge167easy <paragraph text>\n',0
+section	.rodata
+	strStart:			db '<!DOCTYPE html>',0xA,'<html>',0xA,0x9,'<head>',0xA,0x9,0x9,'<title></title>',0xA,0x9,'</head>',0xA,0xA,0x9,'<body>',0xA,0x9,0x9,'<p>',0
 	strStartLen:	equ $-strStart
+	strEnd:				db '</p>',0xA,0x9,'</body>',0xA,'</html>',0
 	strEndLen:		equ $-strEnd
+	strUsage:			db 'Usage: ./challenge167easy <outputfile>',0xA,0
 	strUsageLen:	equ $-strUsage
+	strOpenError:			db "Can't open file.",0xA,0
+	strOpenErrorLen:	equ $-strOpenError
 
 section	.text
 
 main:
 	push	rbp
 	mov		rbp,rsp
-	sub		rsp,0
+	sub		rsp,4096
 	
-	;mov		rcx,[rbp + 16]
-	;cmp		byte [rbp],2
-	;jne		usage
-	jmp			usage
+	cmp		rdi,2
+	jne		usage
 	
-	add		rsp,0
+	mov		r11,rsi
+
+getstring:
+	mov		rax,0
+	mov		rdi,0
+	mov		rsi,rsp
+	mov		rdx,4096
+	syscall
+	cmp		rax,1
+	jle		endmain
+
+	mov		r10,rax
+	sub		r10,1
+openit:
+	mov		rax,2
+	mov		rdi,r11
+	mov		rsi,2
+	;mov		rsi,0102o
+	;mov		rdx,0666o
+	syscall
+	mov		r12,rax
+	cmp		rax,0
+	jl		cantopen
+	
+writeit:
+	mov		rax,1
+	mov		rdi,r12
+	mov		rsi,strStart
+	mov		rdx,strStartLen
+	syscall
+	
+	mov		rax,1
+	mov		rdi,r12
+	mov		rsi,rsp
+	mov		rdx,r10
+	syscall
+	
+	mov		rax,1
+	mov		rdi,r12
+	mov		rsi,strEnd
+	mov		rdx,strEndLen
+	syscall
+
+closeit:
+	mov		rax,3
+	mov		rdi,r12
+	syscall
+endmain:
+	add		rsp,4096
 	mov		rsp,rbp
 	pop		rbp
-
-	;ret
-
+	ret
 usage:
 	mov		rax,1
-	mov		rdi,1
+	mov		rdi,2
 	mov		rsi,strUsage
 	mov		rdx,strUsageLen
 	syscall
-	ret
+	jmp		endmain
+
+cantopen:
+	mov		rax,1
+	mov		rdi,2
+	mov		rsi,strOpenError
+	mov		rdx,strOpenErrorLen
+	syscall
+	mov r12,1
+	jmp		writeit
